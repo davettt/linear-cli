@@ -1,0 +1,36 @@
+{
+  "name": "linear-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for importing issues to Linear from JSON files",
+  "type": "module",
+  "bin": {
+    "linear-cli": "./bin/linear-cli.js"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "security": "npm audit",
+    "check": "npm run lint && npm run format:check"
+  },
+  "keywords": [
+    "linear",
+    "cli",
+    "import",
+    "issues",
+    "project-management"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
+}

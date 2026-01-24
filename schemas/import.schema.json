@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Linear CLI Import Schema",
+  "description": "Schema for importing issues to Linear",
+  "type": "object",
+  "required": ["team", "issues"],
+  "properties": {
+    "team": {
+      "type": "string",
+      "description": "Team name or key (e.g., 'Engineering' or 'ENG')"
+    },
+    "project": {
+      "type": "string",
+      "description": "Optional project name to add issues to"
+    },
+    "defaultStatus": {
+      "type": "string",
+      "description": "Default workflow state for issues without explicit status (e.g., 'Backlog', 'Todo')"
+    },
+    "issues": {
+      "type": "array",
+      "description": "List of issues to create",
+      "items": {
+        "$ref": "#/definitions/issue"
+      }
+    }
+  },
+  "definitions": {
+    "issue": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Issue title"
+        },
+        "identifier": {
+          "type": "string",
+          "description": "Issue identifier (e.g., 'TC-110') for matching existing issues. More reliable than title matching."
+        },
+        "description": {
+          "type": "string",
+          "description": "Issue description (supports markdown)"
+        },
+        "labels": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Label names (created if they don't exist)"
+        },
+        "status": {
+          "type": "string",
+          "description": "Workflow state name (e.g., 'Backlog', 'Todo', 'In Progress')"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "description": "Priority: 0=None, 1=Urgent, 2=High, 3=Medium, 4=Low"
+        },
+        "estimate": {
+          "type": "integer",
+          "description": "Estimate points"
+        },
+        "subIssues": {
+          "type": "array",
+          "description": "Nested sub-issues under this parent",
+          "items": {
+            "$ref": "#/definitions/issue"
+          }
+        }
+      }
+    }
+  }
+}

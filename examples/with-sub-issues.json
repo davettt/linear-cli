@@ -1,0 +1,48 @@
+{
+  "team": "My Team",
+  "project": "My Project",
+  "defaultStatus": "Backlog",
+  "issues": [
+    {
+      "title": "Epic: User Authentication",
+      "description": "Implement user authentication system.\n\nThis epic covers login, registration, and password reset functionality.",
+      "labels": ["epic"],
+      "status": "Backlog",
+      "subIssues": [
+        {
+          "title": "Create login page",
+          "description": "Build login form with email/password fields",
+          "labels": ["feature"]
+        },
+        {
+          "title": "Create registration page",
+          "description": "Build registration form with validation",
+          "labels": ["feature"]
+        },
+        {
+          "title": "Implement password reset",
+          "description": "Email-based password reset flow",
+          "labels": ["feature"]
+        }
+      ]
+    },
+    {
+      "title": "Epic: Dashboard",
+      "description": "Build the main dashboard view.",
+      "labels": ["epic"],
+      "status": "Backlog",
+      "subIssues": [
+        {
+          "title": "Dashboard layout",
+          "description": "Create responsive grid layout for widgets",
+          "labels": ["feature"]
+        },
+        {
+          "title": "Analytics widget",
+          "description": "Display key metrics with charts",
+          "labels": ["feature"]
+        }
+      ]
+    }
+  ]
+}

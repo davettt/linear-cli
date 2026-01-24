@@ -1,0 +1,15 @@
+{
+  "team": "My Team",
+  "issues": [
+    {
+      "title": "First issue",
+      "description": "A simple issue without sub-issues",
+      "labels": ["feature"]
+    },
+    {
+      "title": "Second issue",
+      "description": "Another standalone issue",
+      "labels": ["bug"]
+    }
+  ]
+}
