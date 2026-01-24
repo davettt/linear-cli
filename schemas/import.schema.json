@@ -61,6 +61,10 @@
           "type": "integer",
           "description": "Estimate points"
         },
+        "assignee": {
+          "type": "string",
+          "description": "Assignee by email or display name"
+        },
         "subIssues": {
           "type": "array",
           "description": "Nested sub-issues under this parent",

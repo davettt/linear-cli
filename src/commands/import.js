@@ -3,6 +3,8 @@ import {
   getProjectByName,
   getTeamLabels,
   getTeamIssues,
+  getUsers,
+  findUserByNameOrEmail,
   createLabel,
   createIssue,
   updateIssue,
@@ -58,7 +60,15 @@ function resolveStatusId(statusName, workflowStates) {
 /**
  * Build issue input object
  */
-function buildIssueInput(issue, teamId, projectId, labelIds, stateId, parentId = null) {
+function buildIssueInput(
+  issue,
+  teamId,
+  projectId,
+  labelIds,
+  stateId,
+  parentId = null,
+  assigneeId = null
+) {
   const input = {
     title: issue.title,
     teamId,
@@ -90,6 +100,10 @@ function buildIssueInput(issue, teamId, projectId, labelIds, stateId, parentId =
 
   if (issue.estimate !== undefined) {
     input.estimate = issue.estimate;
+  }
+
+  if (assigneeId) {
+    input.assigneeId = assigneeId;
   }
 
   return input;
@@ -134,12 +148,26 @@ export async function importCommand(filePath, options = {}) {
     }
   }
 
-  // Get existing labels, workflow states, and issues
+  // Get existing labels, workflow states, issues, and users
   const existingLabels = await getTeamLabels(team.id, apiKey);
   const workflowStates = await getWorkflowStates(team.id, apiKey);
   const existingIssues = await getTeamIssues(team.id, apiKey);
+  const users = await getUsers(apiKey);
 
   log.dim(`Found ${existingIssues.length} existing issues in team`);
+
+  // Helper to resolve assignee
+  const resolveAssigneeId = (assignee) => {
+    if (!assignee) {
+      return null;
+    }
+    const user = findUserByNameOrEmail(users, assignee);
+    if (!user) {
+      log.warn(`Assignee "${assignee}" not found - skipping assignment`);
+      return null;
+    }
+    return user.id;
+  };
 
   // Resolve default status if specified
   const defaultStateId = data.defaultStatus
@@ -193,6 +221,9 @@ export async function importCommand(filePath, options = {}) {
       ? resolveStatusId(issue.status, workflowStates)
       : defaultStateId;
 
+    // Resolve assignee
+    const parentAssigneeId = resolveAssigneeId(issue.assignee);
+
     let parentIssue;
     if (existingParent && !update) {
       // Skip existing issue
@@ -211,6 +242,9 @@ export async function importCommand(filePath, options = {}) {
       if (parentStateId) {
         updateInput.stateId = parentStateId;
       }
+      if (parentAssigneeId) {
+        updateInput.assigneeId = parentAssigneeId;
+      }
 
       if (dryRun) {
         log.dim(`[dry-run] Would update: ${existingParent.identifier} - ${issue.title}`);
@@ -227,7 +261,9 @@ export async function importCommand(filePath, options = {}) {
         team.id,
         project?.id,
         parentLabelIds,
-        parentStateId
+        parentStateId,
+        null,
+        parentAssigneeId
       );
 
       // Create parent issue
@@ -265,6 +301,9 @@ export async function importCommand(filePath, options = {}) {
           ? resolveStatusId(subIssue.status, workflowStates)
           : defaultStateId;
 
+        // Resolve assignee
+        const subAssigneeId = resolveAssigneeId(subIssue.assignee);
+
         if (existingSub && !update) {
           // Skip existing sub-issue
           log.warn(`  Skipped (exists): ${existingSub.identifier} - ${subIssue.title}`);
@@ -281,6 +320,9 @@ export async function importCommand(filePath, options = {}) {
           }
           if (subStateId) {
             updateInput.stateId = subStateId;
+          }
+          if (subAssigneeId) {
+            updateInput.assigneeId = subAssigneeId;
           }
           // Update parent if different (reparenting)
           if (parentIssue.id && existingSub.parent?.id !== parentIssue.id) {
@@ -310,7 +352,8 @@ export async function importCommand(filePath, options = {}) {
           project?.id,
           subLabelIds,
           subStateId,
-          dryRun ? null : parentIssue.id
+          dryRun ? null : parentIssue.id,
+          subAssigneeId
         );
 
         // Create sub-issue

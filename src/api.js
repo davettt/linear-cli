@@ -172,6 +172,44 @@ export async function createIssue(input, apiKey) {
 }
 
 /**
+ * Get users in the workspace
+ */
+export async function getUsers(apiKey) {
+  const query = `
+    query Users {
+      users {
+        nodes {
+          id
+          name
+          displayName
+          email
+          active
+        }
+      }
+    }
+  `;
+
+  const data = await linearQuery(query, {}, apiKey);
+  return data.users.nodes.filter((user) => user.active);
+}
+
+/**
+ * Find user by name or email
+ */
+export function findUserByNameOrEmail(users, identifier) {
+  if (!identifier) {
+    return null;
+  }
+  const lower = identifier.toLowerCase();
+  return users.find(
+    (u) =>
+      u.email?.toLowerCase() === lower ||
+      u.name?.toLowerCase() === lower ||
+      u.displayName?.toLowerCase() === lower
+  );
+}
+
+/**
  * Get existing issues for a team (for duplicate checking)
  */
 export async function getTeamIssues(teamId, apiKey) {

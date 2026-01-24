@@ -151,6 +151,7 @@ Then run: `linear-cli import reparent.json --update`
 | `status`      | No       | Workflow state (e.g., "Backlog", "Todo")           |
 | `priority`    | No       | 0=None, 1=Urgent, 2=High, 3=Medium, 4=Low          |
 | `estimate`    | No       | Estimate points                                    |
+| `assignee`    | No       | Assignee by email or display name                  |
 | `subIssues`   | No       | Nested sub-issues                                  |
 
 ## LLM Integration

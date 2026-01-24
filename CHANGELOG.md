@@ -17,5 +17,6 @@ All notable changes to linear-cli will be documented in this file.
 - `--update` flag to update existing issues instead of skipping
 - `identifier` field for matching issues by ID (e.g., "TC-110") instead of title
 - Reparenting support - move issues to different parents with `--update`
+- `assignee` field to assign issues by email or display name
 - `.env` file support for API key storage
 - JSON schema for validation
