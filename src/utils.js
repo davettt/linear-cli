@@ -1,4 +1,41 @@
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
+import { homedir } from 'os';
+import { join } from 'path';
+
+/**
+ * Get the config directory path
+ * @returns {string} - Path to ~/.config/linear-cli
+ */
+export function getConfigDir() {
+  return join(homedir(), '.config', 'linear-cli');
+}
+
+/**
+ * Get the config file path
+ * @returns {string} - Path to ~/.config/linear-cli/.env
+ */
+export function getConfigPath() {
+  return join(getConfigDir(), '.env');
+}
+
+/**
+ * Load API key from config file
+ * @returns {string|null} - API key or null if not found
+ */
+function loadApiKeyFromConfig() {
+  const configPath = getConfigPath();
+  if (!existsSync(configPath)) {
+    return null;
+  }
+
+  try {
+    const content = readFileSync(configPath, 'utf-8');
+    const match = content.match(/^LINEAR_API_KEY=["']?([^"'\n]+)["']?/m);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Load and parse JSON file
@@ -21,21 +58,28 @@ export function loadJsonFile(filePath) {
 }
 
 /**
- * Get API key from environment
+ * Get API key from environment or config file
+ * Checks in order: env var, ~/.config/linear-cli/.env, local .env
  * @returns {string} - API key
  */
 export function getApiKey() {
-  const apiKey = process.env.LINEAR_API_KEY;
-
-  if (!apiKey) {
-    throw new Error(
-      'LINEAR_API_KEY environment variable is required.\n' +
-        'Get your API key from: Linear Settings > API > Create key\n' +
-        'Then run: export LINEAR_API_KEY="lin_api_xxxxx"'
-    );
+  // 1. Check environment variable (highest priority)
+  if (process.env.LINEAR_API_KEY) {
+    return process.env.LINEAR_API_KEY;
   }
 
-  return apiKey;
+  // 2. Check config file (~/.config/linear-cli/.env)
+  const configApiKey = loadApiKeyFromConfig();
+  if (configApiKey) {
+    return configApiKey;
+  }
+
+  // 3. No API key found
+  throw new Error(
+    'LINEAR_API_KEY not found.\n' +
+      'Run "linear-cli init" to set up your API key.\n' +
+      'Get your key from: Linear Settings > API > Create key'
+  );
 }
 
 /**

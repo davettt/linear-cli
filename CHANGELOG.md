@@ -2,6 +2,19 @@
 
 All notable changes to linear-cli will be documented in this file.
 
+## [1.2.0] - 2026-01-25
+
+### Added
+
+- `init` command for easy API key setup
+- Config stored in `~/.config/linear-cli/.env` (works from any directory)
+- API key lookup order: env var → config file → local .env
+
+### Changed
+
+- Simplified setup: just run `linear-cli init`
+- Updated help text and documentation
+
 ## [1.1.0] - 2026-01-25
 
 ### Added

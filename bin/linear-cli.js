@@ -3,6 +3,7 @@
 import 'dotenv/config';
 import { importCommand } from '../src/commands/import.js';
 import { getCommand } from '../src/commands/get.js';
+import { initCommand } from '../src/commands/init.js';
 import { log } from '../src/utils.js';
 
 const HELP_TEXT = `
@@ -12,37 +13,25 @@ USAGE:
   linear-cli <command> [args] [options]
 
 COMMANDS:
-  import <file>       Create issues from a JSON file
+  init                Set up API key (one-time setup)
   get <identifier>    Get issue details by identifier (e.g., TC-109)
-
-IMPORT OPTIONS:
-  --dry-run           Preview changes without creating issues
-  --update            Update existing issues instead of skipping
+  import <file>       Create issues from a JSON file
 
 GET OPTIONS:
   --children          Include sub-issues
   --output <file>     Export issue to JSON file
 
+IMPORT OPTIONS:
+  --dry-run           Preview changes without creating issues
+  --update            Update existing issues instead of skipping
+
 GENERAL OPTIONS:
   --help, -h          Show this help message
   --version, -v       Show version
 
-ENVIRONMENT:
-  LINEAR_API_KEY   Required. Your Linear API key.
-                   Get it from: Linear Settings > API > Create key
-
-                   Option 1: Copy .env.example to .env and add your key
-                   Option 2: export LINEAR_API_KEY="lin_api_xxxxx"
-
 EXAMPLES:
   # Setup (one-time)
-  cp .env.example .env   # then edit .env with your key
-
-  # Import issues
-  linear-cli import issues.json
-
-  # Preview import (dry run)
-  linear-cli import issues.json --dry-run
+  linear-cli init
 
   # Get issue details
   linear-cli get TC-109
@@ -53,13 +42,16 @@ EXAMPLES:
   # Export issue to JSON file
   linear-cli get TC-100 --output issue.json
 
-  # Export issue with children to JSON
-  linear-cli get TC-100 --children --output epic.json
+  # Import issues
+  linear-cli import issues.json
+
+  # Preview import (dry run)
+  linear-cli import issues.json --dry-run
 
 For full documentation, see: README.md
 `;
 
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -82,6 +74,10 @@ async function main() {
 
   try {
     switch (command) {
+      case 'init':
+        await initCommand();
+        break;
+
       case 'import':
         if (!arg1) {
           log.error('Error: Missing file path');

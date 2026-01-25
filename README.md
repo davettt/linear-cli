@@ -10,29 +10,38 @@ Features:
 ## Requirements
 
 - Node.js 18+
-- Linear API key
+- Linear API key (get from: Linear Settings > API > Create key)
 
 ## Installation
 
+**Option 1: Install from GitHub (recommended)**
+
 ```bash
-git clone https://github.com/yourusername/linear-cli.git
+npm install -g github:davidtiong/linear-cli
+linear-cli init
+```
+
+**Option 2: Clone and link (for development)**
+
+```bash
+git clone https://github.com/davidtiong/linear-cli.git
 cd linear-cli
 npm install
 npm link
+linear-cli init
 ```
 
 ## Setup
 
-Get your API key from: **Linear Settings > API > Create key**
-
-**Option 1: .env file (recommended)**
+Run the init command and enter your API key when prompted:
 
 ```bash
-cp .env.example .env
-# Edit .env and add your API key
+linear-cli init
 ```
 
-**Option 2: Environment variable**
+This saves your key to `~/.config/linear-cli/.env` so it works from any directory.
+
+**Alternative: Environment variable**
 
 ```bash
 export LINEAR_API_KEY="lin_api_xxxxx"
