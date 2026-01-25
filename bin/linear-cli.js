@@ -4,6 +4,7 @@ import 'dotenv/config';
 import { importCommand } from '../src/commands/import.js';
 import { getCommand } from '../src/commands/get.js';
 import { initCommand } from '../src/commands/init.js';
+import { commentCommand } from '../src/commands/comment.js';
 import { log } from '../src/utils.js';
 
 const HELP_TEXT = `
@@ -13,9 +14,10 @@ USAGE:
   linear-cli <command> [args] [options]
 
 COMMANDS:
-  init                Set up API key (one-time setup)
-  get <identifier>    Get issue details by identifier (e.g., TC-109)
-  import <file>       Create issues from a JSON file
+  init                      Set up API key (one-time setup)
+  get <identifier>          Get issue details by identifier (e.g., TC-109)
+  comment <identifier> <msg> Add a comment to an issue
+  import <file>             Create issues from a JSON file
 
 GET OPTIONS:
   --children          Include sub-issues
@@ -42,6 +44,9 @@ EXAMPLES:
   # Export issue to JSON file
   linear-cli get TC-100 --output issue.json
 
+  # Add a comment to an issue
+  linear-cli comment TC-109 "Fixed in latest commit"
+
   # Import issues
   linear-cli import issues.json
 
@@ -51,7 +56,7 @@ EXAMPLES:
 For full documentation, see: README.md
 `;
 
-const VERSION = '1.2.0';
+const VERSION = '1.3.0';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -97,6 +102,13 @@ async function main() {
         const outputIndex = args.indexOf('--output');
         const output = outputIndex !== -1 ? args[outputIndex + 1] : null;
         await getCommand(arg1, { children, output });
+        break;
+      }
+
+      case 'comment': {
+        // Join remaining args after identifier as the comment body
+        const commentBody = args.slice(2).join(' ');
+        await commentCommand(arg1, commentBody);
         break;
       }
 

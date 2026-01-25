@@ -17,14 +17,14 @@ Features:
 **Option 1: Install from GitHub (recommended)**
 
 ```bash
-npm install -g github:davidtiong/linear-cli
+npm install -g github:davettt/linear-cli
 linear-cli init
 ```
 
 **Option 2: Clone and link (for development)**
 
 ```bash
-git clone https://github.com/davidtiong/linear-cli.git
+git clone https://github.com/davettt/linear-cli.git
 cd linear-cli
 npm install
 npm link
@@ -63,6 +63,16 @@ linear-cli get TC-100 --output issue.json
 
 # Export with children
 linear-cli get TC-100 --children --output epic.json
+```
+
+### Add Comments
+
+```bash
+# Add a comment to an issue
+linear-cli comment TC-109 "Fixed in latest commit"
+
+# Multi-word comments work naturally
+linear-cli comment TC-126 "Implemented ActivityView with timer and tips section"
 ```
 
 **Terminal output (human-readable):**

@@ -2,6 +2,13 @@
 
 All notable changes to linear-cli will be documented in this file.
 
+## [1.3.0] - 2026-01-25
+
+### Added
+
+- `comment` command to add comments to issues
+- Example: `linear-cli comment TC-109 "Fixed in latest commit"`
+
 ## [1.2.0] - 2026-01-25
 
 ### Added

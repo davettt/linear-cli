@@ -359,3 +359,36 @@ export async function getIssueByIdentifier(identifier, includeChildren, apiKey) 
   const data = await linearQuery(query, { identifier }, apiKey);
   return data.issue;
 }
+
+/**
+ * Create a comment on an issue
+ * @param {string} issueId - The issue's internal ID (not identifier)
+ * @param {string} body - Comment text (markdown supported)
+ * @param {string} apiKey - Linear API key
+ * @returns {Promise<object>} Created comment
+ */
+export async function createComment(issueId, body, apiKey) {
+  const mutation = `
+    mutation CreateComment($input: CommentCreateInput!) {
+      commentCreate(input: $input) {
+        success
+        comment {
+          id
+          body
+          createdAt
+          user {
+            name
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await linearQuery(mutation, { input: { issueId, body } }, apiKey);
+
+  if (!data.commentCreate.success) {
+    throw new Error('Failed to create comment');
+  }
+
+  return data.commentCreate.comment;
+}
