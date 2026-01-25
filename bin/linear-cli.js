@@ -2,22 +2,30 @@
 
 import 'dotenv/config';
 import { importCommand } from '../src/commands/import.js';
+import { getCommand } from '../src/commands/get.js';
 import { log } from '../src/utils.js';
 
 const HELP_TEXT = `
-linear-cli - Import issues to Linear from JSON files
+linear-cli - CLI tool for interacting with Linear
 
 USAGE:
-  linear-cli <command> <file> [options]
+  linear-cli <command> [args] [options]
 
 COMMANDS:
-  import <file>    Create issues from a JSON file
+  import <file>       Create issues from a JSON file
+  get <identifier>    Get issue details by identifier (e.g., TC-109)
 
-OPTIONS:
-  --dry-run        Preview changes without creating issues
-  --update         Update existing issues instead of skipping
-  --help, -h       Show this help message
-  --version, -v    Show version
+IMPORT OPTIONS:
+  --dry-run           Preview changes without creating issues
+  --update            Update existing issues instead of skipping
+
+GET OPTIONS:
+  --children          Include sub-issues
+  --output <file>     Export issue to JSON file
+
+GENERAL OPTIONS:
+  --help, -h          Show this help message
+  --version, -v       Show version
 
 ENVIRONMENT:
   LINEAR_API_KEY   Required. Your Linear API key.
@@ -36,30 +44,22 @@ EXAMPLES:
   # Preview import (dry run)
   linear-cli import issues.json --dry-run
 
-JSON FORMAT:
-  {
-    "team": "Team Name",
-    "project": "Project Name",  // optional
-    "issues": [
-      {
-        "title": "Parent Issue",
-        "description": "Description",  // optional
-        "labels": ["feature"],          // optional
-        "status": "Backlog",            // optional
-        "subIssues": [                  // optional
-          {
-            "title": "Sub-issue",
-            "labels": ["feature"]
-          }
-        ]
-      }
-    ]
-  }
+  # Get issue details
+  linear-cli get TC-109
+
+  # Get issue with sub-issues
+  linear-cli get TC-100 --children
+
+  # Export issue to JSON file
+  linear-cli get TC-100 --output issue.json
+
+  # Export issue with children to JSON
+  linear-cli get TC-100 --children --output epic.json
 
 For full documentation, see: README.md
 `;
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -76,21 +76,33 @@ async function main() {
   }
 
   const command = args[0];
-  const filePath = args[1];
+  const arg1 = args[1];
   const dryRun = args.includes('--dry-run');
   const update = args.includes('--update');
-
-  if (!filePath && command !== '--help' && command !== '-h') {
-    log.error('Error: Missing file path');
-    console.log('Usage: linear-cli <command> <file>');
-    process.exit(1);
-  }
 
   try {
     switch (command) {
       case 'import':
-        await importCommand(filePath, { dryRun, update });
+        if (!arg1) {
+          log.error('Error: Missing file path');
+          console.log('Usage: linear-cli import <file>');
+          process.exit(1);
+        }
+        await importCommand(arg1, { dryRun, update });
         break;
+
+      case 'get': {
+        if (!arg1) {
+          log.error('Error: Missing issue identifier');
+          console.log('Usage: linear-cli get <identifier> [--children] [--output <file>]');
+          process.exit(1);
+        }
+        const children = args.includes('--children');
+        const outputIndex = args.indexOf('--output');
+        const output = outputIndex !== -1 ? args[outputIndex + 1] : null;
+        await getCommand(arg1, { children, output });
+        break;
+      }
 
       default:
         log.error(`Unknown command: ${command}`);

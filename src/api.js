@@ -284,3 +284,78 @@ export async function getWorkflowStates(teamId, apiKey) {
   const data = await linearQuery(query, {}, apiKey);
   return data.workflowStates.nodes.filter((state) => state.team.id === teamId);
 }
+
+/**
+ * Get issue by identifier (e.g., "TC-109")
+ * @param {string} identifier - Issue identifier like "TC-109"
+ * @param {boolean} includeChildren - Whether to fetch sub-issues
+ * @param {string} apiKey - Linear API key
+ * @returns {Promise<object>} Issue data
+ */
+export async function getIssueByIdentifier(identifier, includeChildren, apiKey) {
+  const childrenFragment = includeChildren
+    ? `
+        children {
+          nodes {
+            id
+            identifier
+            title
+            description
+            priority
+            estimate
+            state {
+              name
+              type
+            }
+            labels {
+              nodes {
+                name
+              }
+            }
+            assignee {
+              name
+              email
+            }
+          }
+        }
+      `
+    : '';
+
+  const query = `
+    query IssueByIdentifier($identifier: String!) {
+      issue(id: $identifier) {
+        id
+        identifier
+        title
+        description
+        priority
+        estimate
+        state {
+          name
+          type
+        }
+        labels {
+          nodes {
+            name
+          }
+        }
+        assignee {
+          name
+          email
+        }
+        parent {
+          identifier
+          title
+        }
+        team {
+          name
+          key
+        }
+        ${childrenFragment}
+      }
+    }
+  `;
+
+  const data = await linearQuery(query, { identifier }, apiKey);
+  return data.issue;
+}

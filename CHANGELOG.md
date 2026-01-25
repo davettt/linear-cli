@@ -2,6 +2,17 @@
 
 All notable changes to linear-cli will be documented in this file.
 
+## [1.1.0] - 2026-01-25
+
+### Added
+
+- `get` command to retrieve issue details by identifier
+- `--children` flag to include sub-issues in output
+- `--output <file>` flag to export issue as import-compatible JSON
+- Human-readable terminal output with status icons
+- Round-trip support: export with `get --output` then re-import with `import`
+- Expanded LLM Integration documentation
+
 ## [1.0.0] - 2026-01-24
 
 ### Added

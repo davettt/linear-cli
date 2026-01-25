@@ -1,8 +1,11 @@
 # linear-cli
 
-CLI tool for importing issues to Linear from JSON files.
+CLI tool for interacting with Linear issues.
 
-Designed for workflows where an LLM generates issue structures that users can review and import with a single command.
+Features:
+
+- **Import** issues from JSON files (great for LLM-generated issue structures)
+- **Get** issue details by identifier with human-readable output or JSON export
 
 ## Requirements
 
@@ -36,6 +39,59 @@ export LINEAR_API_KEY="lin_api_xxxxx"
 ```
 
 ## Usage
+
+### Get Issue Details
+
+```bash
+# Get issue by identifier
+linear-cli get TC-109
+
+# Include sub-issues
+linear-cli get TC-100 --children
+
+# Export to JSON file (import-compatible format)
+linear-cli get TC-100 --output issue.json
+
+# Export with children
+linear-cli get TC-100 --children --output epic.json
+```
+
+**Terminal output (human-readable):**
+
+```
+TC-109: Test on simulator + real device
+Status: In Progress ▶
+Labels: testing, phase-1
+
+Description:
+## Manual Testing Checklist
+...
+
+Sub-issues (3):
+  TC-110: Test app launch ✓
+  TC-111: Test home view (In Progress)
+  TC-112: Test completion flow (Todo)
+```
+
+**JSON output (import-compatible):**
+
+```json
+{
+  "team": "TiongCreative",
+  "issues": [
+    {
+      "identifier": "TC-109",
+      "title": "Test on simulator + real device",
+      "description": "...",
+      "status": "In Progress",
+      "labels": ["testing"],
+      "subIssues": [...]
+    }
+  ]
+}
+```
+
+### Import Issues
 
 ```bash
 # Preview import (dry run)
@@ -156,15 +212,48 @@ Then run: `linear-cli import reparent.json --update`
 
 ## LLM Integration
 
-This tool works well with LLM-generated JSON. Example prompt:
+After running `npm link`, the CLI is globally available. LLMs can use it directly:
+
+### Checking Issues
+
+```bash
+# View issue details
+linear-cli get TC-109
+
+# View epic with all sub-issues
+linear-cli get TC-100 --children
+
+# Export issue to JSON for analysis
+linear-cli get TC-100 --children --output issue.json
+```
+
+### Creating Issues
+
+LLMs can generate JSON and import it:
+
+```bash
+# Create issues.json with the schema below, then:
+linear-cli import issues.json --dry-run  # preview
+linear-cli import issues.json            # import
+```
+
+Example prompt for generating issues:
 
 > "Create a JSON file for linear-cli with issues for [your project]. Use this schema: team, project (optional), and issues array with title, description, labels, and optional subIssues for nested issues."
 
-Then review and import:
+### For Project Documentation
 
-```bash
-linear-cli import llm-output.json --dry-run  # preview
-linear-cli import llm-output.json            # import
+Add to your project's README or `.claude/instructions.md`:
+
+```markdown
+## Linear Integration
+
+Use `linear-cli` to interact with Linear issues:
+
+- `linear-cli get <ID>` - View issue details
+- `linear-cli get <ID> --children` - Include sub-issues
+- `linear-cli import <file.json> --dry-run` - Preview import
+- `linear-cli import <file.json>` - Create issues from JSON
 ```
 
 ## Examples

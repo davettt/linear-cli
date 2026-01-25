@@ -1,7 +1,7 @@
 {
   "name": "linear-cli",
-  "version": "1.0.0",
-  "description": "CLI tool for importing issues to Linear from JSON files",
+  "version": "1.1.0",
+  "description": "CLI tool for interacting with Linear issues",
   "type": "module",
   "bin": {
     "linear-cli": "./bin/linear-cli.js"
