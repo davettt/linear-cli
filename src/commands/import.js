@@ -203,6 +203,20 @@ export async function importCommand(filePath, options = {}) {
   log.info(`\nProcessing ${data.issues.length} issues...`);
 
   for (const issue of data.issues) {
+    // Resolve parentId if it's an identifier string (e.g., "TC-112")
+    let resolvedParentId = null;
+    if (issue.parentId) {
+      const parentIssue = existingIssues.find(
+        (i) => i.identifier.toLowerCase() === issue.parentId.toLowerCase()
+      );
+      if (parentIssue) {
+        resolvedParentId = parentIssue.id;
+        log.dim(`  Resolved parent: ${issue.parentId} -> ${parentIssue.id}`);
+      } else {
+        log.warn(`Parent "${issue.parentId}" not found - creating without parent`);
+      }
+    }
+
     // Check for existing parent issue
     const existingParent = findExistingIssue(issue);
 
@@ -262,7 +276,7 @@ export async function importCommand(filePath, options = {}) {
         project?.id,
         parentLabelIds,
         parentStateId,
-        null,
+        resolvedParentId,
         parentAssigneeId
       );
 

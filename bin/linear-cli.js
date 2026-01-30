@@ -5,6 +5,7 @@ import { importCommand } from '../src/commands/import.js';
 import { getCommand } from '../src/commands/get.js';
 import { initCommand } from '../src/commands/init.js';
 import { commentCommand } from '../src/commands/comment.js';
+import { listCommand } from '../src/commands/list.js';
 import { log } from '../src/utils.js';
 
 const HELP_TEXT = `
@@ -18,11 +19,18 @@ COMMANDS:
   get <identifier>          Get issue details by identifier (e.g., TC-109)
   comment <identifier> <msg> Add a comment to an issue
   import <file>             Create issues from a JSON file
+  list <type>               List teams, projects, labels, or states
 
 GET OPTIONS:
   --children          Include sub-issues
   --comments          Include comments
   --output <file>     Export issue to JSON file
+
+LIST TYPES:
+  teams               List all teams (shows name and key)
+  projects            List all projects
+  labels <team>       List labels for a team
+  states <team>       List workflow states for a team
 
 IMPORT OPTIONS:
   --dry-run           Preview changes without creating issues
@@ -51,11 +59,39 @@ EXAMPLES:
   # Add a comment to an issue
   linear-cli comment TC-109 "Fixed in latest commit"
 
+  # List available teams, projects, labels
+  linear-cli list teams
+  linear-cli list projects
+  linear-cli list labels MyTeam
+  linear-cli list states MyTeam
+
   # Import issues
   linear-cli import issues.json
 
   # Preview import (dry run)
   linear-cli import issues.json --dry-run
+
+IMPORT JSON FORMAT:
+  {
+    "team": "TeamName",           // Required: team name or key
+    "project": "ProjectName",     // Optional: project name
+    "defaultStatus": "Todo",      // Optional: default status for issues
+    "issues": [
+      {
+        "title": "Issue title",           // Required
+        "description": "Description",     // Optional (markdown)
+        "status": "In Progress",          // Optional: workflow state
+        "priority": 2,                    // Optional: 0=none, 1=urgent, 2=high, 3=medium, 4=low
+        "estimate": 3,                    // Optional: story points
+        "labels": ["bug", "frontend"],    // Optional: label names (created if missing)
+        "assignee": "user@email.com",     // Optional: email or name
+        "parentId": "TC-112",             // Optional: parent issue identifier
+        "subIssues": [                    // Optional: nested sub-issues
+          { "title": "Sub-task", "description": "..." }
+        ]
+      }
+    ]
+  }
 
 For full documentation, see: README.md
 `;
@@ -116,6 +152,18 @@ async function main() {
         // Join remaining args after identifier as the comment body
         const commentBody = args.slice(2).join(' ');
         await commentCommand(arg1, commentBody);
+        break;
+      }
+
+      case 'list': {
+        if (!arg1) {
+          log.error('Error: Missing list type');
+          console.log('Usage: linear-cli list <type> [team]');
+          console.log('Types: teams, projects, labels, states');
+          process.exit(1);
+        }
+        const arg2 = args[2];
+        await listCommand(arg1, arg2);
         break;
       }
 
