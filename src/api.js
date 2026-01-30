@@ -392,3 +392,32 @@ export async function createComment(issueId, body, apiKey) {
 
   return data.commentCreate.comment;
 }
+
+/**
+ * Get comments for an issue
+ * @param {string} issueId - The issue's internal ID
+ * @param {string} apiKey - Linear API key
+ * @returns {Promise<object[]>} Array of comments
+ */
+export async function getComments(issueId, apiKey) {
+  const query = `
+    query IssueComments($issueId: String!) {
+      issue(id: $issueId) {
+        comments {
+          nodes {
+            id
+            body
+            createdAt
+            user {
+              name
+              email
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await linearQuery(query, { issueId }, apiKey);
+  return data.issue?.comments?.nodes || [];
+}

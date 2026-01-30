@@ -21,6 +21,7 @@ COMMANDS:
 
 GET OPTIONS:
   --children          Include sub-issues
+  --comments          Include comments
   --output <file>     Export issue to JSON file
 
 IMPORT OPTIONS:
@@ -40,6 +41,9 @@ EXAMPLES:
 
   # Get issue with sub-issues
   linear-cli get TC-100 --children
+
+  # Get issue with comments
+  linear-cli get TC-109 --comments
 
   # Export issue to JSON file
   linear-cli get TC-100 --output issue.json
@@ -95,13 +99,16 @@ async function main() {
       case 'get': {
         if (!arg1) {
           log.error('Error: Missing issue identifier');
-          console.log('Usage: linear-cli get <identifier> [--children] [--output <file>]');
+          console.log(
+            'Usage: linear-cli get <identifier> [--children] [--comments] [--output <file>]'
+          );
           process.exit(1);
         }
         const children = args.includes('--children');
+        const comments = args.includes('--comments');
         const outputIndex = args.indexOf('--output');
         const output = outputIndex !== -1 ? args[outputIndex + 1] : null;
-        await getCommand(arg1, { children, output });
+        await getCommand(arg1, { children, comments, output });
         break;
       }
 
