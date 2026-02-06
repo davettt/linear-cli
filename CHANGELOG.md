@@ -2,6 +2,19 @@
 
 All notable changes to linear-cli will be documented in this file.
 
+## [1.5.0] - 2026-02-07
+
+### Added
+
+- `list issues <team>` command to list issues with filtering
+- `--status` filter: `linear-cli list issues TC --status "Todo"`
+- `--project` filter: `linear-cli list issues TC --project "Social Content App"`
+- `--label` filter: `linear-cli list issues TC --label "Feature"`
+- `--cycle` filter: `linear-cli list issues TC --cycle current` (also `previous`, `next`)
+- Filters combine with AND logic
+- Open issues shown by default (excludes completed/canceled)
+- Paginated API queries for large teams
+
 ## [1.4.0] - 2026-02-06
 
 ### Added

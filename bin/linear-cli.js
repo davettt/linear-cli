@@ -21,7 +21,7 @@ COMMANDS:
   status <identifier> <status> Update issue status (e.g., "Done", "In Progress")
   comment <identifier> <msg> Add a comment to an issue
   import <file>             Create issues from a JSON file
-  list <type>               List teams, projects, labels, or states
+  list <type>               List teams, projects, labels, states, or issues
 
 GET OPTIONS:
   --children          Include sub-issues
@@ -33,6 +33,13 @@ LIST TYPES:
   projects            List all projects
   labels <team>       List labels for a team
   states <team>       List workflow states for a team
+  issues <team>       List issues for a team (open by default)
+
+LIST ISSUES OPTIONS:
+  --status <name>     Filter by status (e.g., "Todo", "In Progress")
+  --project <name>    Filter by project name
+  --label <name>      Filter by label name
+  --cycle <which>     Show cycle issues: current, previous, or next
 
 IMPORT OPTIONS:
   --dry-run           Preview changes without creating issues
@@ -71,6 +78,17 @@ EXAMPLES:
   linear-cli list labels MyTeam
   linear-cli list states MyTeam
 
+  # List open issues for a team
+  linear-cli list issues MyTeam
+
+  # Filter issues by status, project, or label
+  linear-cli list issues MyTeam --status "In Progress"
+  linear-cli list issues MyTeam --project "Social Content App"
+  linear-cli list issues MyTeam --label "Feature"
+
+  # List current cycle issues
+  linear-cli list issues MyTeam --cycle current
+
   # Import issues
   linear-cli import issues.json
 
@@ -102,7 +120,7 @@ IMPORT JSON FORMAT:
 For full documentation, see: README.md
 `;
 
-const VERSION = '1.4.0';
+const VERSION = '1.5.0';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -175,12 +193,32 @@ async function main() {
       case 'list': {
         if (!arg1) {
           log.error('Error: Missing list type');
-          console.log('Usage: linear-cli list <type> [team]');
-          console.log('Types: teams, projects, labels, states');
+          console.log('Usage: linear-cli list <type> [team] [options]');
+          console.log('Types: teams, projects, labels, states, issues');
           process.exit(1);
         }
         const arg2 = args[2];
-        await listCommand(arg1, arg2);
+
+        // Parse list options for issues
+        const listOptions = {};
+        const statusIdx = args.indexOf('--status');
+        if (statusIdx !== -1) {
+          listOptions.status = args[statusIdx + 1];
+        }
+        const projectIdx = args.indexOf('--project');
+        if (projectIdx !== -1) {
+          listOptions.project = args[projectIdx + 1];
+        }
+        const labelIdx = args.indexOf('--label');
+        if (labelIdx !== -1) {
+          listOptions.label = args[labelIdx + 1];
+        }
+        const cycleIdx = args.indexOf('--cycle');
+        if (cycleIdx !== -1) {
+          listOptions.cycle = args[cycleIdx + 1];
+        }
+
+        await listCommand(arg1, arg2, listOptions);
         break;
       }
 

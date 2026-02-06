@@ -394,6 +394,210 @@ export async function createComment(issueId, body, apiKey) {
 }
 
 /**
+ * Get filtered issues for a team with pagination
+ * @param {string} teamId - Team internal ID
+ * @param {object} filter - Linear IssueFilter object (optional)
+ * @param {string} apiKey - Linear API key
+ * @returns {Promise<object[]>} Array of issue nodes
+ */
+export async function getFilteredTeamIssues(teamId, filter, apiKey) {
+  const query = `
+    query TeamIssues($teamId: String!, $filter: IssueFilter, $first: Int, $after: String) {
+      team(id: $teamId) {
+        issues(filter: $filter, first: $first, after: $after, orderBy: updatedAt) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+          nodes {
+            identifier
+            title
+            priority
+            state {
+              name
+              type
+            }
+            labels {
+              nodes {
+                name
+              }
+            }
+            assignee {
+              name
+            }
+            project {
+              name
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const allIssues = [];
+  let hasNextPage = true;
+  let after = null;
+
+  while (hasNextPage) {
+    const variables = { teamId, filter: filter || undefined, first: 50, after };
+    const data = await linearQuery(query, variables, apiKey);
+    const connection = data.team.issues;
+    allIssues.push(...connection.nodes);
+    hasNextPage = connection.pageInfo.hasNextPage;
+    after = connection.pageInfo.endCursor;
+  }
+
+  return allIssues;
+}
+
+/**
+ * Get issues in the team's active (current) cycle
+ * @param {string} teamId - Team internal ID
+ * @param {string} apiKey - Linear API key
+ * @returns {Promise<{cycle: object, issues: object[]}|null>} Cycle info and issues
+ */
+export async function getActiveCycleIssues(teamId, apiKey) {
+  const query = `
+    query TeamActiveCycle($teamId: String!) {
+      team(id: $teamId) {
+        activeCycle {
+          id
+          number
+          name
+          startsAt
+          endsAt
+          issues {
+            nodes {
+              identifier
+              title
+              priority
+              state {
+                name
+                type
+              }
+              labels {
+                nodes {
+                  name
+                }
+              }
+              assignee {
+                name
+              }
+              project {
+                name
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await linearQuery(query, { teamId }, apiKey);
+  const cycle = data.team.activeCycle;
+
+  if (!cycle) {
+    return null;
+  }
+
+  return {
+    cycle: {
+      id: cycle.id,
+      number: cycle.number,
+      name: cycle.name,
+      startsAt: cycle.startsAt,
+      endsAt: cycle.endsAt,
+    },
+    issues: cycle.issues.nodes,
+  };
+}
+
+/**
+ * Get issues for a relative cycle (previous, current, or next)
+ * @param {string} teamId - Team internal ID
+ * @param {string} which - "current", "previous", or "next"
+ * @param {string} apiKey - Linear API key
+ * @returns {Promise<{cycle: object, issues: object[]}|null>}
+ */
+export async function getCycleIssues(teamId, which, apiKey) {
+  if (which === 'current') {
+    return getActiveCycleIssues(teamId, apiKey);
+  }
+
+  // Fetch cycle list and active cycle ID
+  const listQuery = `
+    query TeamCycles($teamId: String!) {
+      team(id: $teamId) {
+        activeCycle { id }
+        cycles(orderBy: startsAt, first: 50) {
+          nodes {
+            id
+            number
+            name
+            startsAt
+            endsAt
+          }
+        }
+      }
+    }
+  `;
+
+  const listData = await linearQuery(listQuery, { teamId }, apiKey);
+  const activeCycleId = listData.team.activeCycle?.id;
+  const cycles = listData.team.cycles.nodes;
+
+  if (!activeCycleId) {
+    return null;
+  }
+
+  const activeIndex = cycles.findIndex((c) => c.id === activeCycleId);
+  const targetIndex = which === 'previous' ? activeIndex - 1 : activeIndex + 1;
+
+  if (targetIndex < 0 || targetIndex >= cycles.length) {
+    return null;
+  }
+
+  const targetCycle = cycles[targetIndex];
+
+  // Fetch issues for target cycle
+  const issuesQuery = `
+    query CycleIssues($cycleId: String!) {
+      cycle(id: $cycleId) {
+        issues {
+          nodes {
+            identifier
+            title
+            priority
+            state {
+              name
+              type
+            }
+            labels {
+              nodes {
+                name
+              }
+            }
+            assignee {
+              name
+            }
+            project {
+              name
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const issuesData = await linearQuery(issuesQuery, { cycleId: targetCycle.id }, apiKey);
+
+  return {
+    cycle: targetCycle,
+    issues: issuesData.cycle.issues.nodes,
+  };
+}
+
+/**
  * Get comments for an issue
  * @param {string} issueId - The issue's internal ID
  * @param {string} apiKey - Linear API key

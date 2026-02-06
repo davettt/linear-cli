@@ -8,7 +8,7 @@ Features:
 - **Status** update issue workflow state from the command line
 - **Comment** on issues directly
 - **Import** issues from JSON files (great for LLM-generated issue structures)
-- **List** teams, projects, labels, and workflow states
+- **List** teams, projects, labels, workflow states, and issues (with filtering by status, project, label, or cycle)
 
 ## Requirements
 
@@ -127,6 +127,35 @@ Sub-issues (3):
   ]
 }
 ```
+
+### List Issues
+
+```bash
+# List all open issues for a team
+linear-cli list issues TC
+
+# Filter by status
+linear-cli list issues TC --status "Todo"
+linear-cli list issues TC --status "In Progress"
+
+# Filter by project
+linear-cli list issues TC --project "Social Content App"
+
+# Filter by label
+linear-cli list issues TC --label "Feature"
+
+# Combine filters
+linear-cli list issues TC --status "Todo" --project "Social Content App" --label "bug"
+
+# Show current cycle issues
+linear-cli list issues TC --cycle current
+
+# Show previous or next cycle
+linear-cli list issues TC --cycle previous
+linear-cli list issues TC --cycle next
+```
+
+By default (no `--status` flag), completed and canceled issues are excluded. Filters are combined with AND logic.
 
 ### Import Issues
 
