@@ -4,8 +4,11 @@ CLI tool for interacting with Linear issues.
 
 Features:
 
-- **Import** issues from JSON files (great for LLM-generated issue structures)
 - **Get** issue details by identifier with human-readable output or JSON export
+- **Status** update issue workflow state from the command line
+- **Comment** on issues directly
+- **Import** issues from JSON files (great for LLM-generated issue structures)
+- **List** teams, projects, labels, and workflow states
 
 ## Requirements
 
@@ -64,6 +67,21 @@ linear-cli get TC-100 --output issue.json
 # Export with children
 linear-cli get TC-100 --children --output epic.json
 ```
+
+### Update Issue Status
+
+```bash
+# Mark an issue as done
+linear-cli status TC-109 Done
+
+# Set to in progress
+linear-cli status TC-109 "In Progress"
+
+# Move to backlog
+linear-cli status TC-109 Backlog
+```
+
+Status names are case-insensitive. If the status doesn't match, available states are listed. Use `linear-cli list states <team>` to see all workflow states.
 
 ### Add Comments
 
@@ -271,6 +289,8 @@ Use `linear-cli` to interact with Linear issues:
 
 - `linear-cli get <ID>` - View issue details
 - `linear-cli get <ID> --children` - Include sub-issues
+- `linear-cli status <ID> Done` - Update issue status
+- `linear-cli comment <ID> "message"` - Add a comment
 - `linear-cli import <file.json> --dry-run` - Preview import
 - `linear-cli import <file.json>` - Create issues from JSON
 ```

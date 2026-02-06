@@ -6,6 +6,7 @@ import { getCommand } from '../src/commands/get.js';
 import { initCommand } from '../src/commands/init.js';
 import { commentCommand } from '../src/commands/comment.js';
 import { listCommand } from '../src/commands/list.js';
+import { statusCommand } from '../src/commands/status.js';
 import { log } from '../src/utils.js';
 
 const HELP_TEXT = `
@@ -17,6 +18,7 @@ USAGE:
 COMMANDS:
   init                      Set up API key (one-time setup)
   get <identifier>          Get issue details by identifier (e.g., TC-109)
+  status <identifier> <status> Update issue status (e.g., "Done", "In Progress")
   comment <identifier> <msg> Add a comment to an issue
   import <file>             Create issues from a JSON file
   list <type>               List teams, projects, labels, or states
@@ -55,6 +57,10 @@ EXAMPLES:
 
   # Export issue to JSON file
   linear-cli get TC-100 --output issue.json
+
+  # Update issue status
+  linear-cli status TC-109 Done
+  linear-cli status TC-109 "In Progress"
 
   # Add a comment to an issue
   linear-cli comment TC-109 "Fixed in latest commit"
@@ -96,7 +102,7 @@ IMPORT JSON FORMAT:
 For full documentation, see: README.md
 `;
 
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
 
 async function main() {
   const args = process.argv.slice(2);
@@ -145,6 +151,17 @@ async function main() {
         const outputIndex = args.indexOf('--output');
         const output = outputIndex !== -1 ? args[outputIndex + 1] : null;
         await getCommand(arg1, { children, comments, output });
+        break;
+      }
+
+      case 'status': {
+        if (!arg1) {
+          log.error('Error: Missing issue identifier');
+          console.log('Usage: linear-cli status <identifier> <status>');
+          process.exit(1);
+        }
+        const statusName = args.slice(2).join(' ');
+        await statusCommand(arg1, statusName);
         break;
       }
 

@@ -2,6 +2,16 @@
 
 All notable changes to linear-cli will be documented in this file.
 
+## [1.4.0] - 2026-02-06
+
+### Added
+
+- `status` command to update issue workflow state
+- Example: `linear-cli status TC-109 Done`
+- Supports multi-word statuses: `linear-cli status TC-109 "In Progress"`
+- Case-insensitive status matching
+- Shows available states if given status name doesn't match
+
 ## [1.3.0] - 2026-01-25
 
 ### Added
