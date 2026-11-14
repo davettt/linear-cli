@@ -1,5 +1,7 @@
 # linear-cli
 
+> **Not currently maintained.** I'm not using or developing this app at the moment. I may pick it up again in future, so the code stays here. Until then, issues and pull requests may go unanswered.
+
 CLI tool for interacting with Linear issues.
 
 Features:
